@@ -21,6 +21,11 @@
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/qpnp-revid.h>
+
+#ifdef JRD_PROJECT_POP455C
+extern bool is_scud;
+#endif
+
 /**
  * enum qpnp_vadc_channels - QPNP AMUX arbiter channels
  */

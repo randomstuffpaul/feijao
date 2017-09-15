@@ -2205,6 +2205,9 @@ static int qpnp_vadc_probe(struct spmi_device *spmi)
 {
 	struct qpnp_vadc_chip *vadc;
 	struct qpnp_adc_drv *adc_qpnp;
+#ifdef JRD_PROJECT_POP455C
+	struct qpnp_vadc_result result;
+#endif
 	struct qpnp_vadc_thermal_data *adc_thermal;
 	struct device_node *node = spmi->dev.of_node;
 	struct device_node *child;
@@ -2364,10 +2367,20 @@ static int qpnp_vadc_probe(struct spmi_device *spmi)
 		INIT_WORK(&vadc->trigger_low_thr_work, qpnp_vadc_low_thr_fn);
 	}
 
+#ifdef JRD_PROJECT_POP455C
+	is_scud = false;
+	rc = qpnp_vadc_read(vadc, LR_MUX2_BAT_ID, &result);
+	if (rc) {
+		pr_err("error reading batt id channel = %d, rc = %d\n",
+				LR_MUX2_BAT_ID, rc);
+	} else if (result.physical > 540000 && result.physical < 670000) {
+		is_scud = true;
+	}
+#endif
+
 	vadc->vadc_iadc_sync_lock = false;
 	dev_set_drvdata(&spmi->dev, vadc);
 	list_add(&vadc->list, &qpnp_vadc_device_list);
-
 	return 0;
 
 err_setup:
