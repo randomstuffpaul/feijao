@@ -253,7 +253,7 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 		return 0;
 
 	if ((count < sizeof(to_user_buf))
-			|| copy_to_user(user_buf, to_user_buf, len))
+			|| (copy_to_user(user_buf, to_user_buf, len)))
 		return -EFAULT;
 
 	*ppos += len;	/* increase offset */
@@ -1153,7 +1153,6 @@ int mdss_misr_set(struct mdss_data_type *mdata,
 	}
 
 	map = mdss_misr_get_map(req->block_id, ctl, mdata);
-
 	if (!map) {
 		pr_err("Invalid MISR Block=%d\n", req->block_id);
 		return -EINVAL;

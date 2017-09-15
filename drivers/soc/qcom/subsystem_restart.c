@@ -40,6 +40,21 @@
 #include <soc/qcom/sysmon.h>
 
 #include <asm/current.h>
+//Begin add by (TCTSZ) zhaohong.chen@tcl.com for RAMDUMP UI
+#ifdef CONFIG_JRD_RAMDUMP_UI
+#include <soc/qcom/smem.h>
+#endif
+//End add
+
+/* [Feature]-Add-Begin by TCTSZ. Add subsystem restart reason to klog wenzhao.guo@tcl.com, 2016/02/15, for [Task-1401100] */
+#include <linux/klog.h>
+#undef pr_err
+#undef pr_info
+#undef pr_warn
+#define pr_err ssr_print
+#define pr_info ssr_print
+#define pr_warn ssr_print
+/* [Feature]-Add-End by TCTSZ. Add subsystem restart reason to klog wenzhao.guo@tcl.com, 2016/02/15, for [Task-1401100] */
 
 #define DISABLE_SSR 0x9889deed
 /* If set to 0x9889deed, call to subsystem_restart_dev() returns immediately */
@@ -48,10 +63,6 @@ module_param(disable_restart_work, uint, S_IRUGO | S_IWUSR);
 
 static int enable_debug;
 module_param(enable_debug, int, S_IRUGO | S_IWUSR);
-
-/* The maximum shutdown timeout is the product of MAX_LOOPS and DELAY_MS. */
-#define SHUTDOWN_ACK_MAX_LOOPS	50
-#define SHUTDOWN_ACK_DELAY_MS	100
 
 /**
  * enum p_subsys_state - state of a subsystem (private)
@@ -514,25 +525,6 @@ static void disable_all_irqs(struct subsys_device *dev)
 		disable_irq(dev->desc->stop_ack_irq);
 }
 
-int wait_for_shutdown_ack(struct subsys_desc *desc)
-{
-	int count;
-
-	if (desc && !desc->shutdown_ack_gpio)
-		return 0;
-
-	for (count = SHUTDOWN_ACK_MAX_LOOPS; count > 0; count--) {
-		if (gpio_get_value(desc->shutdown_ack_gpio))
-			return count;
-		msleep(SHUTDOWN_ACK_DELAY_MS);
-	}
-
-	pr_err("[%s]: Timed out waiting for shutdown ack\n", desc->name);
-
-	return -ETIMEDOUT;
-}
-EXPORT_SYMBOL(wait_for_shutdown_ack);
-
 static int wait_for_err_ready(struct subsys_device *subsys)
 {
 	int ret;
@@ -901,7 +893,11 @@ static void device_restart_work_hdlr(struct work_struct *work)
 int subsystem_restart_dev(struct subsys_device *dev)
 {
 	const char *name;
-
+//Begin add by (TCTSZ) zhaohong.chen@tcl.com for RAMDUMP UI
+#ifdef CONFIG_JRD_RAMDUMP_UI
+	void* smem_name = NULL;
+#endif
+//End add
 	if (!get_device(&dev->dev))
 		return -ENODEV;
 
@@ -925,6 +921,18 @@ int subsystem_restart_dev(struct subsys_device *dev)
 
 	pr_info("Restart sequence requested for %s, restart_level = %s.\n",
 		name, restart_levels[dev->restart_level]);
+//Begin add by (TCTSZ) zhaohong.chen@tcl.com for RAMDUMP UI
+#ifdef CONFIG_JRD_RAMDUMP_UI
+	smem_name = smem_alloc(SMEM_SSR_NAME, 2*sizeof(unsigned int),0,SMEM_ANY_HOST_FLAG);
+	if(smem_name==NULL)
+		pr_err("SMEM_SSR_NAME smem_alloc failed\n");
+	else
+	{
+		snprintf((char*)smem_name, strlen(name)+1,"%s", name);
+		printk(KERN_ERR"====Jao subsystem crash test======>%s\n",(char*)smem_name);
+	}
+#endif
+//End add
 
 	if (WARN(disable_restart_work == DISABLE_SSR,
 		"subsys-restart: Ignoring restart request for %s.\n", name)) {
@@ -1392,11 +1400,6 @@ static int subsys_parse_devicetree(struct subsys_desc *desc)
 
 	ret = __get_gpio(desc, "qcom,gpio-ramdump-disable",
 			&desc->ramdump_disable_gpio);
-	if (ret && ret != -ENOENT)
-		return ret;
-
-	ret = __get_gpio(desc, "qcom,gpio-shutdown-ack",
-			&desc->shutdown_ack_gpio);
 	if (ret && ret != -ENOENT)
 		return ret;
 

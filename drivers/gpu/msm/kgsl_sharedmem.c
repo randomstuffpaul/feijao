@@ -1,4 +1,4 @@
-/* Copyright (c) 2002,2007-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2002,2007-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -706,9 +706,7 @@ _kgsl_sharedmem_page_alloc(struct kgsl_memdesc *memdesc,
 
 	memdesc->sglen = sglen;
 	memdesc->size = size;
-
-	if (sglen > 0)
-		sg_mark_end(&memdesc->sg[sglen - 1]);
+	sg_mark_end(&memdesc->sg[sglen - 1]);
 
 	/*
 	 * All memory that goes to the user has to be zeroed out before it gets

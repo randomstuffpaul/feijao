@@ -1765,7 +1765,6 @@ static int msm_lsm_close(struct snd_pcm_substream *substream)
 				 __func__);
 	}
 
-
 	if (prtd->lsm_client->opened) {
 		q6lsm_close(prtd->lsm_client);
 		prtd->lsm_client->opened = false;
