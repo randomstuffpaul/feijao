@@ -359,6 +359,8 @@ static int enter_state(suspend_state_t state)
 	return error;
 }
 
+/* BEGIN modify by xiaoju.liang@tcl.com */
+#ifdef CONFIG_TIMEZONE_UTC
 static void pm_suspend_marker(char *annotation)
 {
 	struct timespec ts;
@@ -370,6 +372,21 @@ static void pm_suspend_marker(char *annotation)
 		annotation, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
 }
+#else
+static void pm_suspend_marker(char *annotation)
+{
+	struct timespec ts;
+	struct rtc_time tm;
+
+	getnstimeofday(&ts);
+	set_localtimezone_timespec(&ts);
+	rtc_time_to_tm(ts.tv_sec, &tm);
+	pr_info("PM: suspend %s %d-%02d-%02d %02d:%02d:%02d.%09lu LOCAL\n",
+		annotation, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+}
+#endif
+/* END xiaoju.liang@tcl.com */
 
 /**
  * pm_suspend - Externally visible function for suspending the system.

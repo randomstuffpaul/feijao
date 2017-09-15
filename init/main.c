@@ -131,7 +131,13 @@ char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;
 /* Command line for parameter parsing */
 static char *static_command_line;
-
+unsigned int lk_uart_log_flag = 0;//[Feature]-Add by TCTSZ  qian.zhao@tcl.com ,2016/03/09
+//add by junfeng.zhou begin
+#ifdef  TCT_SW_ALL_IN_ONE
+#define MAX_PROJECT_NAME_LEN 100
+char *static_version_trace;
+#endif
+//add by junfeng.zhou end
 static char *execute_command;
 static char *ramdisk_execute_command;
 
@@ -346,10 +352,32 @@ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
  */
 static void __init setup_command_line(char *command_line)
 {
+    char *ptr;
 	saved_command_line = alloc_bootmem(strlen (boot_command_line)+1);
 	static_command_line = alloc_bootmem(strlen (command_line)+1);
 	strcpy (saved_command_line, boot_command_line);
 	strcpy (static_command_line, command_line);
+    //[Feature]-Add-BEGIN by TCTSZ  qian.zhao@tcl.com  for lk_uart_log ,2016/03/09
+	ptr = strstr(saved_command_line,"lk_uart_log=1");
+	if ( ptr ){  
+		lk_uart_log_flag = 1;
+	    pr_notice( "lk_uart_log_flag = %d \n",lk_uart_log_flag);
+		}
+	else
+		pr_notice ( "lk_uart_log does not exist");
+	//[Feature]-Add-END by TCTSZ  qian.zhao@tcl.com  for lk_uart_log ,2016/03/09
+	
+	
+//add by junfeng.zhou for all_in_one begin
+#ifdef  TCT_SW_ALL_IN_ONE
+	{
+		char* p = strstr(saved_command_line, "projecttrace=");
+		static_version_trace = alloc_bootmem(MAX_PROJECT_NAME_LEN);
+		sscanf(p, "projecttrace=%s", static_version_trace);
+		pr_notice("static_version_trace= %s\n", static_version_trace);
+}
+#endif
+//add by junfeng.zhou for all_in_one end
 }
 
 /*

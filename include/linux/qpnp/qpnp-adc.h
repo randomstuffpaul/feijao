@@ -24,6 +24,18 @@
 /**
  * enum qpnp_vadc_channels - QPNP AMUX arbiter channels
  */
+ 
+ //add by junfeng.zhou for make  two battery's ntc adcmap compatibility begin
+#if defined (JRD_PROJECT_POP45C)||defined (JRD_PROJECT_POP455C)
+// for ret_battery_id ;
+#define BYD_ID 1
+#define SCUD_ID 2
+#endif
+//add by junfeng.zhou end
+#if defined(JRD_PROJECT_PIXI464G) || defined(JRD_PROJECT_PIXI464GCRICKET)
+#define PIXI464G_JN_ID 0
+#define PIXI464G_SCUD_ID 1
+#endif
 enum qpnp_vadc_channels {
 	USBIN = 0,
 	DCIN,
