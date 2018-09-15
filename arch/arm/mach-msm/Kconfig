@@ -1,4 +1,9 @@
 if ARCH_MSM
+
+config MACH_FEIJAO
+	bool "Support for feijao"
+	select ARCH_MSM8909
+
 menu "MSM SoC Type"
 config ARCH_MDM9640
 	bool "MDM9640"

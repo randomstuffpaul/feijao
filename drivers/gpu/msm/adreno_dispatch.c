@@ -73,7 +73,11 @@ static unsigned int _dispatcher_q_inflight_hi = 15;
 static unsigned int _dispatcher_q_inflight_lo = 4;
 
 /* Command batch timeout (in milliseconds) */
+#ifdef CONFIG_MACH_FEIJAO
+unsigned int adreno_cmdbatch_timeout = 8000;
+#else
 unsigned int adreno_cmdbatch_timeout = 2000;
+#endif
 
 /* Interval for reading and comparing fault detection registers */
 static unsigned int _fault_timer_interval = 200;

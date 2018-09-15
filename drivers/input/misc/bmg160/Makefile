@@ -1,0 +1,2 @@
+obj-$(CONFIG_GRYOSCOPE_BMG160)	+= bmg160.o
+obj-$(CONFIG_GRYOSCOPE_BMG160)	+= bmg160_driver.o
